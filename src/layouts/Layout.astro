@@ -1,0 +1,23 @@
+---
+import '../styles/global.css';
+
+type Props = {
+  title?: string;
+};
+
+const { title = 'Guo Lab' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+  <body class="min-h-dvh bg-white text-slate-900 antialiased">
+    <slot />
+  </body>
+</html>
+
