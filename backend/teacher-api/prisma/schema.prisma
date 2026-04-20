@@ -19,6 +19,7 @@ model User {
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   refreshTokens RefreshToken[]
+  downloadLogs  DownloadLog[]
 }
 
 model RefreshToken {
@@ -33,4 +34,19 @@ model RefreshToken {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+model DownloadLog {
+  id        String   @id @default(uuid()) @db.VarChar(36)
+  userId    String   @db.VarChar(36)
+  objectKey String   @db.VarChar(512)
+  ip        String?  @db.VarChar(64)
+  userAgent String?  @db.VarChar(512)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([objectKey])
 }
