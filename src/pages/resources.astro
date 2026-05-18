@@ -1,0 +1,50 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="资源下载 | Guo Lab">
+  <header class="space-y-2">
+    <h1 class="text-3xl font-semibold tracking-tight">资源下载</h1>
+    <p class="max-w-2xl text-sm leading-6 text-slate-700">
+      本栏目为受保护内容：需要登录后才可访问与下载。
+    </p>
+  </header>
+
+  <div id="auth-guard" class="mt-8 rounded-2xl border border-slate-200 p-5">
+    <p class="text-sm text-slate-700">正在检查登录状态…</p>
+  </div>
+
+  <section id="content" class="mt-6 hidden space-y-3">
+    <div class="rounded-2xl border border-slate-200 p-5">
+      <h2 class="font-semibold">示例资源</h2>
+      <p class="mt-1 text-sm text-slate-600">后续你可以把模板、数据、内部资料都放在这里。</p>
+    </div>
+  </section>
+
+  <script>
+    import { supabase } from '../lib/supabaseClient';
+
+    const guard = document.getElementById('auth-guard');
+    const content = document.getElementById('content');
+    const redirect = encodeURIComponent(window.location.pathname + window.location.search);
+
+    async function check() {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        guard.classList.add('hidden');
+        content.classList.remove('hidden');
+        return;
+      }
+      guard.innerHTML = `
+        <p class="text-sm text-slate-700">你需要登录后才能访问该页面。</p>
+        <a class="mt-3 inline-block rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+           href="/login?redirect=${redirect}">
+          去登录
+        </a>
+      `;
+    }
+
+    check();
+  </script>
+</Layout>
+

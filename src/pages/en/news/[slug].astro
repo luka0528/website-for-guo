@@ -1,0 +1,33 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const enNews = await getCollection('news', (e) => e.data.lang === 'en');
+  return enNews.map((n) => ({ params: { slug: n.data.key } }));
+}
+
+const { slug } = Astro.params;
+const entry = (await getCollection('news', (e) => e.data.lang === 'en')).find((e) => e.data.key === slug);
+if (!entry) {
+  return Astro.redirect('/en/news');
+}
+
+const { Content } = await render(entry);
+---
+
+<Layout title={`${entry.data.title} | News | Guo Lab`}>
+  <article class="prose prose-slate max-w-none">
+    <p class="not-prose text-sm text-slate-600">
+      <a class="hover:text-slate-900" href="/en/news">← Back to News</a>
+    </p>
+    <h1 class="not-prose mt-6 text-3xl font-semibold tracking-tight">{entry.data.title}</h1>
+    <p class="not-prose mt-2 text-sm text-slate-600">{entry.data.date.toISOString().slice(0, 10)}</p>
+    {entry.data.summary ? <p class="not-prose mt-4 text-slate-700">{entry.data.summary}</p> : null}
+    <div class="mt-8">
+      <Content />
+    </div>
+  </article>
+</Layout>
+

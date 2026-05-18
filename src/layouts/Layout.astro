@@ -1,15 +1,61 @@
 ---
 import '../styles/global.css';
+import authStatusUrl from '../scripts/auth-status.ts?url';
 
 type Props = {
   title?: string;
 };
 
 const { title = 'Guo Lab' } = Astro.props;
+
+const pathname = Astro.url.pathname.replace(/\/$/, '') || '/';
+
+const locale = pathname === '/en' || pathname.startsWith('/en/') ? 'en' : 'zh';
+const basePrefix = locale === 'en' ? '/en' : '';
+
+const navByLocale = {
+  zh: [
+    { href: '/', label: '首页' },
+    { href: '/team', label: '团队' },
+    { href: '/publications', label: '科研成果' },
+    { href: '/news', label: '新闻动态' },
+    { href: '/resources', label: '资源下载' },
+    { href: '/contact', label: '联系' }
+  ],
+  en: [
+    { href: '/', label: 'Home' },
+    { href: '/team', label: 'People' },
+    { href: '/publications', label: 'Research' },
+    { href: '/news', label: 'News' },
+    { href: '/resources', label: 'Resources' },
+    { href: '/contact', label: 'Contact' }
+  ]
+} as const;
+
+const nav = navByLocale[locale].map((item) => ({
+  ...item,
+  href: item.href === '/' ? (basePrefix || '/') : `${basePrefix}${item.href}`
+}));
+
+const activePath = locale === 'en'
+  ? (pathname === '/en' ? '/' : pathname.replace(/^\/en/, '') || '/')
+  : pathname;
+
+const switchHref = (() => {
+  if (locale === 'en') {
+    const toZh = pathname.replace(/^\/en/, '') || '/';
+    return toZh;
+  }
+  const toEn = pathname === '/' ? '/en' : `/en${pathname}`;
+  return toEn;
+})();
+
+const langLabel = locale === 'en' ? '中文' : 'EN';
+const htmlLang = locale === 'en' ? 'en' : 'zh-CN';
 ---
 
 <!doctype html>
-<html lang="zh-CN">
+<html lang={htmlLang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -17,7 +63,56 @@ const { title = 'Guo Lab' } = Astro.props;
     <title>{title}</title>
   </head>
   <body class="min-h-dvh bg-white text-slate-900 antialiased">
-    <slot />
+    <header class="sticky top-0 z-10 border-b border-slate-200 bg-white/80 backdrop-blur">
+      <div class="mx-auto flex max-w-5xl items-center justify-between gap-6 px-6 py-4">
+        <a class="font-semibold tracking-tight" href={basePrefix || '/'}>Guo Lab</a>
+        <div class="flex items-center gap-2">
+          <nav class="hidden items-center gap-1 sm:flex" aria-label="Site">
+          {
+            nav.map((item) => {
+              const isActive = item.href === (basePrefix || '/') ? activePath === '/' : activePath.startsWith(item.href.replace(basePrefix, ''));
+              return (
+                <a
+                  href={item.href}
+                  class:list={[
+                    'rounded-xl px-3 py-2 text-sm font-medium transition',
+                    isActive ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100'
+                  ]}
+                >
+                  {item.label}
+                </a>
+              );
+            })
+          }
+          </nav>
+          <span id="auth-status"></span>
+          <a
+            href={switchHref}
+            class="rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+            aria-label="Switch language"
+          >
+            {langLabel}
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-5xl px-6 py-12">
+      <slot />
+    </main>
+
+    <footer class="border-t border-slate-200">
+      <div class="mx-auto flex max-w-5xl flex-col gap-3 px-6 py-10 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
+        <p>© {new Date().getFullYear()} Guo Lab. All rights reserved.</p>
+        <p class="flex gap-4">
+          <a class="hover:text-slate-900" href={`${basePrefix}/news`.replace(/^\/\//, '/')}>{locale === 'en' ? 'News' : '新闻'}</a>
+          <a class="hover:text-slate-900" href={`${basePrefix}/publications`.replace(/^\/\//, '/')}>{locale === 'en' ? 'Research' : '成果'}</a>
+          <a class="hover:text-slate-900" href={`${basePrefix}/contact`.replace(/^\/\//, '/')}>{locale === 'en' ? 'Contact' : '联系'}</a>
+        </p>
+      </div>
+    </footer>
+
+    <script type="module" src={authStatusUrl}></script>
   </body>
 </html>
 

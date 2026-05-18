@@ -1,0 +1,50 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Resources | Guo Lab">
+  <header class="space-y-2">
+    <h1 class="text-3xl font-semibold tracking-tight">Resources</h1>
+    <p class="max-w-2xl text-sm leading-6 text-slate-700">
+      This section is protected. You must be logged in to view and download files.
+    </p>
+  </header>
+
+  <div id="auth-guard" class="mt-8 rounded-2xl border border-slate-200 p-5">
+    <p class="text-sm text-slate-700">Checking your session…</p>
+  </div>
+
+  <section id="content" class="mt-6 hidden space-y-3">
+    <div class="rounded-2xl border border-slate-200 p-5">
+      <h2 class="font-semibold">Example resource</h2>
+      <p class="mt-1 text-sm text-slate-600">You can later put templates, datasets, and internal docs here.</p>
+    </div>
+  </section>
+
+  <script>
+    import { supabase } from '../../lib/supabaseClient';
+
+    const guard = document.getElementById('auth-guard');
+    const content = document.getElementById('content');
+    const redirect = encodeURIComponent(window.location.pathname + window.location.search);
+
+    async function check() {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        guard.classList.add('hidden');
+        content.classList.remove('hidden');
+        return;
+      }
+      guard.innerHTML = `
+        <p class="text-sm text-slate-700">Please log in to access this page.</p>
+        <a class="mt-3 inline-block rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+           href="/en/login?redirect=${redirect}">
+          Log in
+        </a>
+      `;
+    }
+
+    check();
+  </script>
+</Layout>
+

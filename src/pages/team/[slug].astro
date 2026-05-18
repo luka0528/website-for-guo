@@ -1,0 +1,42 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const zhPeople = await getCollection('people', (e) => e.data.lang === 'zh');
+  return zhPeople.map((p) => ({ params: { slug: p.data.key } }));
+}
+
+const { slug } = Astro.params;
+const entry = (await getCollection('people', (e) => e.data.lang === 'zh')).find((e) => e.data.key === slug);
+if (!entry) {
+  return Astro.redirect('/team');
+}
+
+const { Content } = await render(entry);
+---
+
+<Layout title={`${entry.data.name} | 团队 | Guo Lab`}>
+  <article class="prose prose-slate max-w-none">
+    <p class="not-prose text-sm text-slate-600">
+      <a class="hover:text-slate-900" href="/team">← 返回团队</a>
+    </p>
+    <h1 class="not-prose mt-6 text-3xl font-semibold tracking-tight">{entry.data.name}</h1>
+    <p class="not-prose mt-2 text-slate-700">
+      {entry.data.role ?? ''}{entry.data.title ? ` · ${entry.data.title}` : ''}
+    </p>
+    {entry.data.email ? (
+      <p class="not-prose mt-1 text-sm text-slate-600">{entry.data.email}</p>
+    ) : null}
+    {entry.data.interests.length > 0 ? (
+      <p class="not-prose mt-3 text-sm text-slate-600">
+        方向：{entry.data.interests.join(' · ')}
+      </p>
+    ) : null}
+    <div class="mt-8">
+      <Content />
+    </div>
+  </article>
+</Layout>
+

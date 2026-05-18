@@ -1,0 +1,53 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Sign up | Guo Lab">
+  <header class="space-y-2">
+    <h1 class="text-3xl font-semibold tracking-tight">Sign up</h1>
+    <p class="max-w-2xl text-sm leading-6 text-slate-700">Create an account to download papers and resources.</p>
+  </header>
+
+  <form id="signup-form" class="mt-8 grid max-w-md gap-4 rounded-2xl border border-slate-200 p-5">
+    <label class="grid gap-1">
+      <span class="text-xs font-medium text-slate-600">Email</span>
+      <input class="rounded-xl border border-slate-200 px-3 py-2 text-sm" type="email" name="email" required />
+    </label>
+    <label class="grid gap-1">
+      <span class="text-xs font-medium text-slate-600">Password</span>
+      <input class="rounded-xl border border-slate-200 px-3 py-2 text-sm" type="password" name="password" minlength="6" required />
+    </label>
+    <button class="rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800" type="submit">
+      Sign up
+    </button>
+    <p class="text-sm text-slate-600">
+      Already have an account? <a class="font-medium text-slate-900 underline" href="/en/login">Log in</a>
+    </p>
+    <p id="msg" class="text-sm text-red-600"></p>
+  </form>
+
+  <script>
+    import { supabase } from '../../lib/supabaseClient';
+
+    const form = document.getElementById('signup-form');
+    const msg = document.getElementById('msg');
+    const params = new URLSearchParams(window.location.search);
+    const redirect = params.get('redirect') || '/en';
+
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msg.textContent = '';
+      const fd = new FormData(form);
+      const email = String(fd.get('email') || '');
+      const password = String(fd.get('password') || '');
+
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) {
+        msg.textContent = error.message;
+        return;
+      }
+      window.location.href = `/en/signup/success?redirect=${encodeURIComponent(redirect)}`;
+    });
+  </script>
+</Layout>
+

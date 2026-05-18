@@ -1,0 +1,95 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { render } from 'astro:content';
+import downloadUrl from '../../../scripts/download.ts?url';
+
+export async function getStaticPaths() {
+  const enPubs = await getCollection('publications', (e) => e.data.lang === 'en');
+  return enPubs.map((p) => ({ params: { slug: p.data.key } }));
+}
+
+const { slug } = Astro.params;
+const entry = (await getCollection('publications', (e) => e.data.lang === 'en')).find((e) => e.data.key === slug);
+if (!entry) {
+  return Astro.redirect('/en/publications');
+}
+
+const { Content } = await render(entry);
+---
+
+<Layout title={`${entry.data.title} | Research | Guo Lab`}>
+  <article class="prose prose-slate max-w-none">
+    <p class="not-prose text-sm text-slate-600">
+      <a class="hover:text-slate-900" href="/en/publications">← Back to Research</a>
+    </p>
+    <h1 class="not-prose mt-6 text-3xl font-semibold tracking-tight">{entry.data.title}</h1>
+    <p class="not-prose mt-2 text-sm text-slate-600">
+      {entry.data.year} · {entry.data.type}{entry.data.venue ? ` · ${entry.data.venue}` : ''}
+    </p>
+    <p class="not-prose mt-3 text-slate-700">{entry.data.authors.join(' · ')}</p>
+
+    <div class="not-prose mt-6 flex flex-wrap gap-2">
+      {entry.data.url ? (
+        <a class="rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium hover:bg-slate-100" href={entry.data.url} target="_blank" rel="noreferrer">
+          Paper
+        </a>
+      ) : null}
+      {entry.data.files.map((f) => (
+        <a
+          class="download-link rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium hover:bg-slate-100"
+          href={`/api/download/${f.key}`}
+          data-file-key={f.key}
+          data-visibility={f.visibility}
+        >
+          {f.label ?? 'Download'}
+        </a>
+      ))}
+      {entry.data.doi ? (
+        <span class="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700">DOI: {entry.data.doi}</span>
+      ) : null}
+      {entry.data.tags.map((t) => (
+        <a class="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100" href={`/en/publications?tag=${encodeURIComponent(t)}`}>
+          {t}
+        </a>
+      ))}
+    </div>
+
+    <div class="mt-10">
+      <Content />
+    </div>
+
+    {entry.data.bibtex || entry.data.citation ? (
+      <section class="not-prose mt-12 rounded-2xl border border-slate-200 p-5">
+        <div class="flex items-center justify-between gap-4">
+          <h2 class="text-sm font-semibold">Citation</h2>
+          <button
+            type="button"
+            class="rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+            id="copy-citation"
+          >
+            Copy
+          </button>
+        </div>
+        <pre class="mt-4 overflow-auto rounded-xl bg-slate-950 p-4 text-xs text-slate-100" id="citation-text">{entry.data.bibtex ?? entry.data.citation}</pre>
+      </section>
+    ) : null}
+  </article>
+
+  <script is:inline>
+    const btn = document.getElementById('copy-citation');
+    const pre = document.getElementById('citation-text');
+    if (btn && pre) {
+      btn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(pre.textContent || '');
+          btn.textContent = 'Copied';
+          setTimeout(() => (btn.textContent = 'Copy'), 1200);
+        } catch {}
+      });
+    }
+  </script>
+
+  <script type="module" src={downloadUrl}></script>
+</Layout>
+

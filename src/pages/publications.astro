@@ -1,0 +1,183 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const items = (await getCollection('publications', (e) => e.data.lang === 'zh'))
+  .sort((a, b) => b.data.year - a.data.year || a.data.title.localeCompare(b.data.title));
+
+const typeLabel: Record<string, string> = {
+  journal: '期刊',
+  conference: '会议',
+  preprint: '预印本',
+  workshop: 'Workshop',
+  thesis: '学位论文',
+  other: '其他'
+};
+
+const years = Array.from(new Set(items.map((i) => i.data.year))).sort((a, b) => b - a);
+const tags = Array.from(new Set(items.flatMap((i) => i.data.tags))).sort((a, b) => a.localeCompare(b, 'zh'));
+const authors = Array.from(new Set(items.flatMap((i) => i.data.authors))).sort((a, b) => a.localeCompare(b, 'zh'));
+
+const featured = items.filter((i) => i.data.featured);
+const byYear = years.map((y) => ({ year: y, items: items.filter((i) => i.data.year === y) }));
+---
+
+<Layout title="科研成果 | Guo Lab">
+  <header class="space-y-2">
+    <h1 class="text-3xl font-semibold tracking-tight">科研成果</h1>
+    <p class="max-w-2xl text-sm leading-6 text-slate-700">
+      支持按年份、标签、作者筛选；列表数据来自 `src/content/publications/`。
+    </p>
+  </header>
+
+  <section class="mt-8 grid gap-3 rounded-2xl border border-slate-200 p-5 sm:grid-cols-3">
+    <label class="grid gap-1">
+      <span class="text-xs font-medium text-slate-600">年份</span>
+      <select id="filter-year" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+        <option value="">全部</option>
+        {years.map((y) => <option value={String(y)}>{y}</option>)}
+      </select>
+    </label>
+    <label class="grid gap-1">
+      <span class="text-xs font-medium text-slate-600">标签</span>
+      <select id="filter-tag" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+        <option value="">全部</option>
+        {tags.map((t) => <option value={t}>{t}</option>)}
+      </select>
+    </label>
+    <label class="grid gap-1">
+      <span class="text-xs font-medium text-slate-600">作者</span>
+      <select id="filter-author" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+        <option value="">全部</option>
+        {authors.map((a) => <option value={a}>{a}</option>)}
+      </select>
+    </label>
+    <div class="sm:col-span-3">
+      <button id="filter-clear" class="rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">
+        清除筛选
+      </button>
+      <span id="filter-count" class="ml-3 text-sm text-slate-600"></span>
+    </div>
+  </section>
+
+  <section class="mt-6 space-y-3" id="pub-list">
+    {featured.length > 0 ? (
+      <div class="rounded-2xl border border-slate-200 p-5">
+        <div class="flex items-center justify-between gap-4">
+          <h2 class="text-sm font-semibold text-slate-900">精选成果</h2>
+          <p class="text-xs text-slate-600">Featured</p>
+        </div>
+        <div class="mt-4 space-y-3">
+          {featured.map((p) => (
+            <a
+              class="pub-item block rounded-2xl border border-slate-200 p-4 hover:border-slate-300"
+              href={`/publications/${p.data.key}`}
+              data-year={String(p.data.year)}
+              data-tags={p.data.tags.join('|')}
+              data-authors={p.data.authors.join('|')}
+            >
+              <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <h3 class="font-semibold">{p.data.title}</h3>
+                <span class="text-xs text-slate-600">{p.data.year}</span>
+                <span class="text-xs text-slate-600">{typeLabel[p.data.type] ?? p.data.type}</span>
+              </div>
+              <p class="mt-2 text-sm text-slate-700">{p.data.authors.join(' · ')}</p>
+              <p class="mt-1 text-sm text-slate-600">{p.data.venue ?? ''}</p>
+            </a>
+          ))}
+        </div>
+      </div>
+    ) : null}
+
+    {byYear.map((group) => (
+      <section class="year-group space-y-3" data-year-group={String(group.year)}>
+        <div class="flex items-baseline justify-between gap-4 px-1">
+          <h2 class="text-lg font-semibold tracking-tight">{group.year}</h2>
+          <p class="text-xs text-slate-600">{group.items.length} 篇</p>
+        </div>
+        {group.items.map((p) => (
+          <a
+            class="pub-item block rounded-2xl border border-slate-200 p-5 hover:border-slate-300"
+            href={`/publications/${p.data.key}`}
+            data-year={String(p.data.year)}
+            data-tags={p.data.tags.join('|')}
+            data-authors={p.data.authors.join('|')}
+          >
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <h3 class="font-semibold">{p.data.title}</h3>
+              <span class="text-xs text-slate-600">{typeLabel[p.data.type] ?? p.data.type}</span>
+            </div>
+            <p class="mt-2 text-sm text-slate-700">{p.data.authors.join(' · ')}</p>
+            <p class="mt-1 text-sm text-slate-600">{p.data.venue ?? ''}</p>
+            {p.data.tags.length > 0 ? (
+              <p class="mt-3 text-xs text-slate-600">标签：{p.data.tags.join(' · ')}</p>
+            ) : null}
+          </a>
+        ))}
+      </section>
+    ))}
+  </section>
+
+  <script is:inline>
+    const qs = new URLSearchParams(location.search);
+    const yearEl = document.getElementById('filter-year');
+    const tagEl = document.getElementById('filter-tag');
+    const authorEl = document.getElementById('filter-author');
+    const clearEl = document.getElementById('filter-clear');
+    const countEl = document.getElementById('filter-count');
+    const items = Array.from(document.querySelectorAll('.pub-item'));
+
+    function apply() {
+      const year = yearEl.value;
+      const tag = tagEl.value;
+      const author = authorEl.value;
+
+      qs.set('year', year);
+      qs.set('tag', tag);
+      qs.set('author', author);
+      ['year', 'tag', 'author'].forEach((k) => {
+        if (!qs.get(k)) qs.delete(k);
+      });
+      const next = qs.toString();
+      history.replaceState(null, '', next ? `?${next}` : location.pathname);
+
+      let visible = 0;
+      for (const el of items) {
+        const okYear = !year || el.dataset.year === year;
+        const okTag = !tag || (el.dataset.tags || '').split('|').includes(tag);
+        const okAuthor = !author || (el.dataset.authors || '').split('|').includes(author);
+        const show = okYear && okTag && okAuthor;
+        el.style.display = show ? '' : 'none';
+        if (show) visible++;
+      }
+      countEl.textContent = `显示 ${visible} / ${items.length}`;
+
+      const yearGroups = Array.from(document.querySelectorAll('[data-year-group]'));
+      for (const group of yearGroups) {
+        const year = group.getAttribute('data-year-group');
+        const anyVisible = items.some((el) => el.style.display !== 'none' && el.dataset.year === year);
+        group.style.display = anyVisible ? '' : 'none';
+      }
+    }
+
+    function init() {
+      yearEl.value = qs.get('year') || '';
+      tagEl.value = qs.get('tag') || '';
+      authorEl.value = qs.get('author') || '';
+      apply();
+    }
+
+    yearEl.addEventListener('change', apply);
+    tagEl.addEventListener('change', apply);
+    authorEl.addEventListener('change', apply);
+    clearEl.addEventListener('click', () => {
+      yearEl.value = '';
+      tagEl.value = '';
+      authorEl.value = '';
+      apply();
+    });
+
+    init();
+  </script>
+</Layout>
+

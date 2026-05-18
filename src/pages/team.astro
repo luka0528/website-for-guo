@@ -1,0 +1,31 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const people = (await getCollection('people', (e) => e.data.lang === 'zh'))
+  .sort((a, b) => a.data.order - b.data.order);
+---
+
+<Layout title="团队 | Guo Lab">
+  <header class="space-y-2">
+    <h1 class="text-3xl font-semibold tracking-tight">团队</h1>
+    <p class="max-w-2xl text-sm leading-6 text-slate-700">
+      成员列表来自内容集合（`src/content/people/`）。后续接入 CMS 后，老师/助理可在后台直接维护。
+    </p>
+  </header>
+
+  <section class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    {
+      people.map((p) => (
+        <a class="rounded-2xl border border-slate-200 p-5 hover:border-slate-300" href={`/team/${p.data.key}`}>
+          <h2 class="font-semibold">{p.data.name}</h2>
+          <p class="mt-1 text-sm text-slate-600">{p.data.role ?? '成员'}</p>
+          {p.data.interests.length > 0 ? (
+            <p class="mt-3 text-xs text-slate-600">{p.data.interests.slice(0, 3).join(' · ')}</p>
+          ) : null}
+        </a>
+      ))
+    }
+  </section>
+</Layout>
+

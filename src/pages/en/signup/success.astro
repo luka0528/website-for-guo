@@ -1,0 +1,22 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+
+const redirect = Astro.url.searchParams.get('redirect') ?? '/en';
+---
+
+<Layout title="Sign up successful | Guo Lab">
+  <header class="space-y-2">
+    <h1 class="text-3xl font-semibold tracking-tight">Sign up successful</h1>
+    <p class="max-w-2xl text-sm leading-6 text-slate-700">
+      You can log in now. After logging in, we’ll bring you back to your previous page.
+    </p>
+  </header>
+
+  <div class="mt-8 rounded-2xl border border-slate-200 p-5">
+    <a class="inline-block rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+       href={`/en/login?redirect=${encodeURIComponent(redirect)}`}>
+      Log in
+    </a>
+  </div>
+</Layout>
+

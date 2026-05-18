@@ -1,0 +1,22 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const redirect = Astro.url.searchParams.get('redirect') ?? '/';
+---
+
+<Layout title="注册成功 | Guo Lab">
+  <header class="space-y-2">
+    <h1 class="text-3xl font-semibold tracking-tight">注册成功</h1>
+    <p class="max-w-2xl text-sm leading-6 text-slate-700">
+      你可以直接登录了。登录后会返回你刚才的页面。
+    </p>
+  </header>
+
+  <div class="mt-8 rounded-2xl border border-slate-200 p-5">
+    <a class="inline-block rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+       href={`/login?redirect=${encodeURIComponent(redirect)}`}>
+      去登录
+    </a>
+  </div>
+</Layout>
+

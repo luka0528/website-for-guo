@@ -1,0 +1,31 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const people = (await getCollection('people', (e) => e.data.lang === 'en'))
+  .sort((a, b) => a.data.order - b.data.order);
+---
+
+<Layout title="People | Guo Lab">
+  <header class="space-y-2">
+    <h1 class="text-3xl font-semibold tracking-tight">People</h1>
+    <p class="max-w-2xl text-sm leading-6 text-slate-700">
+      This list is powered by a content collection in `src/content/people/`. Later, the CMS will let you edit it from the browser.
+    </p>
+  </header>
+
+  <section class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    {
+      people.map((p) => (
+        <a class="rounded-2xl border border-slate-200 p-5 hover:border-slate-300" href={`/en/team/${p.data.key}`}>
+          <h2 class="font-semibold">{p.data.name}</h2>
+          <p class="mt-1 text-sm text-slate-600">{p.data.role ?? 'Member'}</p>
+          {p.data.interests.length > 0 ? (
+            <p class="mt-3 text-xs text-slate-600">{p.data.interests.slice(0, 3).join(' · ')}</p>
+          ) : null}
+        </a>
+      ))
+    }
+  </section>
+</Layout>
+

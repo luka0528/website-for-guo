@@ -1,0 +1,33 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Guo Lab | Lab Website">
+  <div class="py-4">
+    <header class="space-y-3">
+      <p class="text-sm font-medium text-slate-600">Research · Team · News</p>
+      <h1 class="text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
+        Guo Lab Website
+      </h1>
+      <p class="max-w-2xl text-pretty text-base leading-7 text-slate-700">
+        This is the English version of the site. Next, we’ll connect structured content for people, publications, and news, and then add a CMS for editing.
+      </p>
+    </header>
+
+    <section class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <a class="rounded-2xl border border-slate-200 p-5 hover:border-slate-300" href="/en/team">
+        <h2 class="font-semibold">People</h2>
+        <p class="mt-1 text-sm text-slate-600">Members, profiles, alumni</p>
+      </a>
+      <a class="rounded-2xl border border-slate-200 p-5 hover:border-slate-300" href="/en/publications">
+        <h2 class="font-semibold">Research</h2>
+        <p class="mt-1 text-sm text-slate-600">Publications, projects, patents</p>
+      </a>
+      <a class="rounded-2xl border border-slate-200 p-5 hover:border-slate-300" href="/en/news">
+        <h2 class="font-semibold">News</h2>
+        <p class="mt-1 text-sm text-slate-600">Updates, events, recruitment</p>
+      </a>
+    </section>
+  </div>
+</Layout>
+
